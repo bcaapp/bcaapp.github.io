@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <!-- Include the CesiumJS JavaScript and CSS files -->
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.144/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.144/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/main.css">
+
+  <script src="https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json"></script>
+
+</head>
+
+<body>
+  <div id="cesiumContainer"></div>
+  <script type="module">
+    // Your access token can be found at: https://ion.cesium.com/tokens.
+    // This is the default access token from your ion account
+
+    Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxMWMxYjhiZC1jMjBjLTQ3NGUtYTMyMS02OGY4ZTdhMWQ3OGQiLCJpZCI6NTg2MzgsImlhdCI6MTY5NDc1NTM0MH0.6w3AWBjGWYVBjnFeO3DyuSvWtJoWeW_vBY8kosiGp2E";
+    //const viewer = new Cesium.Viewer("cesiumContainer");
+
+    var viewer = new Cesium.Viewer('cesiumContainer', {
+      contextOptions: {
+          requestWebgl2: true,
+      },
+      msaaSamples: 4,
+      baseLayerPicker: true,
+      vrButton: true,
+      geocoder: true,
+      navigationHelpButton: true,
+      //terrain: Cesium.Terrain.fromWorldTerrain(),
+      terrainShadows: Cesium.ShadowMode.ENABLED,
+      selectionIndicator: true,
+      shadows: true,
+      timeline: true,
+      sceneModePicker: true
+    });
+
+    // Hide the Cesium credit container
+    viewer._cesiumWidget._creditContainer.style.display = "none";
+
+    // Select the "Stadia Alidade Smooth Dark" base layer from the base layer picker
+    const viewModel = viewer.baseLayerPicker.viewModel;
+    const targetLayer = viewModel.imageryProviderViewModels.find(
+      model => model.name === "Stadia Alidade Smooth Dark"
+    );
+
+    if (targetLayer) {
+      viewModel.selectedImagery = targetLayer;
+    }
+
+    // Load the 3D Tileset from Cesium ion using the asset ID
+    try {
+      const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(5062129);
+      viewer.scene.primitives.add(tileset);
+      await viewer.zoomTo(tileset);
+
+      // Apply the default style if it exists
+      const extras = tileset.asset.extras;
+      if (
+        Cesium.defined(extras) &&
+        Cesium.defined(extras.ion) &&
+        Cesium.defined(extras.ion.defaultStyle)
+      ) {
+        tileset.style = new Cesium.Cesium3DTileStyle(extras.ion.defaultStyle);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    // To add Cesium OSM Buildings, a global 3D buildings layer.
+    //const buildingTileset = await Cesium.createOsmBuildingsAsync();
+    //viewer.scene.primitives.add(buildingTileset);   
+  </script>
+ </div>
+</body>
+</html>
